@@ -1,14 +1,14 @@
 {
     "name": "helloworld",
-    "displayName": "HelloCordova",
+    "displayName": "HelloPresentation",
     "version": "1.0.0",
-    "description": "A sample Apache Cordova application that responds to the deviceready event.",
+    "description": "This is a demo implementation of an cordova app that uses the cordova-presentation-plugin",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "author": "Apache Cordova Team",
-    "license": "Apache-2.0",
+    "author": "Mathias Möller, Lorenzo Toso, Vincent Deuschle",
+    "license": "MIT",
     "dependencies": {
         "cordova-android": "^6.2.3",
         "cordova-plugin-whitelist": "^1.3.2",
