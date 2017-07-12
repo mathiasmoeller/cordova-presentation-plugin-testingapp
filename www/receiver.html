@@ -24,11 +24,10 @@
         if (message.data == "Say hello") {
           connection.send({data: "hello"});
         } else {
-          let messageObj = JSON.parse(message.data);
           let spanElt = document.createElement("SPAN");
-          spanElt.lang = messageObj.lang;
-          spanElt.textContent = messageObj.string;
-          document.appendChild(spanElt);
+          spanElt.lang = message.data.lang;
+          spanElt.textContent = message.data.string;
+          document.body.appendChild(spanElt);
         }
       };
     };

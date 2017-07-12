@@ -21,6 +21,7 @@ package de.fhg.fokus.famium.presentation;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import org.apache.cordova.LOG;
 import org.apache.cordova.CallbackContext;
 
 import android.app.Activity;
@@ -29,30 +30,31 @@ import android.app.Activity;
  * This class is the Java representation of a <code>PresentationSession</code> defined in the JavaScript Presentation API.
  *
  */
-public class PresentationSession {
-	public static String CLOSED = "closed";
-	public static String CONNECTED = "connected";
-	public static String CONNECTING = "connecting";
-	public static String TERMINATED = "terminated";
+public class PresentationSession{
+    private static final String LOG_TAG = "PresentationSession";
+
 	private String id;
 	private String url;
 	private Activity activity;
-	private CallbackContext callbackContext;
-	private String state;
+	private CallbackContext callbackContext = new NoCallback();
+	private State state;
 	private SecondScreenPresentation presentation;
-	
+    private ConnectionProxy receiverProxy;
+    private ConnectionProxy senderProxy;
+
 	/**
 	 * 
 	 * @param activity the parent activity associated with this session
 	 * @param url the URL of the presenting page passed by calling <code>navigator.presentation.requestSession(url)</code>
 	 * @param callbackContext The Cordova {@link CallbackContext} associated with the <code>navigator.presentation.requestSession(url)</code> call
 	 */
-	public PresentationSession(Activity activity, String url, CallbackContext callbackContext) {
+	public PresentationSession(Activity activity, String url) {
 		this.id = new BigInteger(130, new SecureRandom()).toString(32);
 		this.url = url;
 		this.activity = activity;
-		this.callbackContext = callbackContext;
-		this.state = CLOSED;
+		this.state = State.terminated;
+        this.receiverProxy = new ReceiverProxy(this);
+        this.senderProxy = new SenderProxy(this);
 	}
 	
 	/**
@@ -76,7 +78,7 @@ public class PresentationSession {
 	public void setCallbackContext(CallbackContext callbackContext) {
 		this.callbackContext = callbackContext;
 	}
-	
+
 	/**
 	 * @return the URL of the presenting page
 	 */
@@ -90,44 +92,16 @@ public class PresentationSession {
 	public String getId() {
 		return id;
 	}
-	
-	/**
-	 * @return the session state. currently two states are supported: <code>'connected'</code> and <code>'disconnected'</code>
-	 */
-	public String getState() {
+
+	public State getState() {
 		return state;
 	}
-	
-	/**
-	 * @param state set the state. 
-	 * 
-	 *  If state is changed, the <code>session.onstatechange</code> will be fired on both controlling and presenting page. If new state value 'disconnected', session will be destroyed and removed from the sessions list. 
-	 */
-	public void setState(String state) {
-		if (this.state.equals(state)) {
-			return;
-		}
 
-		this.state = state;
-		CDVPresentationPlugin.sendSessionResult(PresentationSession.this, "onstatechange", state);
+	public void runOnUiThread(Runnable runnable)
+    {
+        getActivity().runOnUiThread(runnable);
+    }
 
-		callReceiverStateChanged();
-
-		if (TERMINATED.equals(state) && getPresentation() != null) {
-            setPresentation(null);
-        }
-	}
-
-	private void callReceiverStateChanged() {
-		getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (getPresentation() != null) {
-                    getPresentation().getWebView().loadUrl("javascript:NavigatorPresentationJavascriptInterface.onstatechange('"+getId()+"','"+getState()+"')");
-                }
-            }
-        });
-	}
 
 	/**
 	 * @return the {@link SecondScreenPresentation} associated with this session to display the presenting page on it.
@@ -139,37 +113,79 @@ public class PresentationSession {
 	/**
 	 * @param presentation the {@link SecondScreenPresentation} associated with this session. State will change to <code>disconnected</code> if value of presentation is <code>null</code>
 	 */
-	public void setPresentation(SecondScreenPresentation presentation) {
-		if (presentation == null) {
-			if (this.presentation != null) {
-				this.presentation.setSession(null);
-			}
-			setState(TERMINATED);
-		}
-		else {
-			presentation.setSession(this);
-		}
-		this.presentation = presentation;
-	}
-	
-	/**
-	 * 
-	 * @param toPresentation <code>true</code> to post message to presenting page, <code>false</code> to post message to controlling page
-	 * @param msg the message to post
-	 */
-	public void postMessage(boolean toPresentation, final String msg) {
-		if (CONNECTED.equals(getState())) {
-			if (toPresentation) {
-				getActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						getPresentation().getWebView().loadUrl("javascript:NavigatorPresentationJavascriptInterface.onmessage('"+getId()+"','"+msg+"')");
-					}
-				});
-			}
-			else{
-				CDVPresentationPlugin.sendSessionResult(PresentationSession.this, "onmessage", msg);
-			}
-		}
-	}
+	public void assignPresentation(SecondScreenPresentation presentation) {
+        LOG.d(LOG_TAG, "assignPresentation()");
+        this.presentation = presentation;
+        if(presentation != null)
+        {
+            this.presentation.setSession(this);
+        }
+    }
+
+    public void postMessageToPresentation(final String msg)
+    {
+        LOG.d(LOG_TAG, "postMessageToPresentation()");
+        if(!isConnected())
+            return;
+        receiverProxy.postMessage(msg);
+
+    }
+    public void postMessageToSender(String msg) {
+        LOG.d(LOG_TAG, "postMessageToSender()");
+        if(!isConnected())
+            return;
+        senderProxy.postMessage(msg);
+    }
+
+    private void setState(State state)
+    {
+        LOG.d(LOG_TAG, "setState(" + state.name() + ")");
+
+        if(getState() == state)
+            return;
+        this.state = state;
+    }
+
+    private boolean isConnected() {
+        LOG.d(LOG_TAG, "isConnected()");
+        return getState() == State.connected;
+    }
+
+    public void setConnectionSuccessful() {
+        LOG.d(LOG_TAG, "setConnectionSuccessful()");
+        setState(State.connected);
+
+        receiverProxy.setConnectionSuccessful();
+        senderProxy.setConnectionSuccessful();
+        getPresentation().show();
+    }
+
+    public void connect() {
+        LOG.d(LOG_TAG, "connect()");
+        setState(State.connecting);
+
+        receiverProxy.connect();
+        senderProxy.connect();
+    }
+
+    public void close(String reason, String message) {
+        LOG.d(LOG_TAG, "close()");
+        setState(State.closed);
+
+        receiverProxy.close(reason, message);
+        senderProxy.close(reason, message);
+    }
+
+    public void terminate() {
+        LOG.d(LOG_TAG, "terminate()");
+        setState(State.terminated);
+
+        receiverProxy.terminate();
+        senderProxy.terminate();
+
+        if (getPresentation() != null) {
+            getPresentation().terminate();
+        }
+        assignPresentation(null);
+    }
 }

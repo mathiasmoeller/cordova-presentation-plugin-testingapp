@@ -86,6 +86,7 @@ function PresentationRequest(url) {
   }
 
   function setupConnection(result) {
+    console.log('sender: setting up connection', result);
     connection.id = result.id;
     switch (result.eventType) {
       case 'onstatechange':
@@ -118,7 +119,7 @@ function PresentationRequest(url) {
       case 'connecting':
         break;
       case 'closed':
-        var event = new PresentationConnectionCloseEvent('close', {message: result.message});
+        var event = new PresentationConnectionCloseEvent('close', {message: result.message, reason: result.reason});
         connection.onclose(event);
         break;
       case 'terminated':

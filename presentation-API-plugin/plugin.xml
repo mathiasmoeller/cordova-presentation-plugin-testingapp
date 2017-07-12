@@ -83,7 +83,14 @@
        <source-file src="src/android/CDVPresentationPlugin.java" target-dir="src/de/fhg/fokus/famium/presentation" />
 	   <source-file src="src/android/PresentationSession.java" target-dir="src/de/fhg/fokus/famium/presentation" />
 	   <source-file src="src/android/NavigatorPresentationJS.java" target-dir="src/de/fhg/fokus/famium/presentation" />
-	   <source-file src="src/android/SecondScreenPresentation.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/SecondScreenPresentation.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/State.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/ReceiverProxy.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/SenderProxy.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/ConnectionProxy.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/ReceiverJavaScriptInterface.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+        <source-file src="src/android/NoCallback.java" target-dir="src/de/fhg/fokus/famium/presentation" />
+
      </platform>
 
 </plugin>

@@ -173,10 +173,10 @@
   // EXAMPLE 7 //////////////////////////////////////////////////////////////////////////////////////////////////
 
   sendBtn.onclick = function() {
-    connection.send({data: "{string: '你好，世界!', lang: 'zh-CN'}"});
-    connection.send({data: "{string: 'こんにちは、世界!', lang: 'ja'}"});
-    connection.send({data: "{string: '안녕하세요, 세계!', lang: 'ko'}"});
-    connection.send({data: "{string: 'Hello, world!', lang: 'en-US'}"});
+    connection.send({data: {string: '你好，世界!', lang: 'zh-CN'}});
+    connection.send({data: {string: 'こんにちは、世界!', lang: 'ja'}});
+    connection.send({data: {string: '안녕하세요, 세계!', lang: 'ko'}});
+    connection.send({data: {string: 'Hello, world!', lang: 'en-US'}});
   };
 </script>
 

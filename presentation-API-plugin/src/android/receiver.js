@@ -232,7 +232,9 @@
     });
     Object.defineProperty(connection, 'close', {
       get: function() {
-        return function() {
+        return function(message) {
+          // TODO replace when implemented
+          // return jsInterface.close(connection.id, message);
           return jsInterface.close(connection.id);
         };
       }
@@ -270,27 +272,51 @@
     }
   };
 
-  function handleStateChangeEvent(connection, state) {
-    connection.state = state;
-    switch (state) {
-      case 'connected':
-        connection.onconnect(connection);
-        break;
-      case 'connecting':
-        break;
-      case 'closed':
-        connection.onclose(connection);
-        break;
-      case 'terminated':
-        connection.onterminate(connection);
-        connection = undefined;
-        break;
-      default:
-        console.log('unknown connection state: ', state);
-        break;
+    function handleStateChangeEvent(connection, state) {
+        connection.state = state;
+        switch (state) {
+            case 'connected':
+                connection.onconnect(connection);
+                break;
+            case 'connecting':
+                jsInterface.setOnPresent();
+                break;
+          case 'closed':
+                var event = new PresentationConnectionCloseEvent('close', {message: state}); // TODO: message
+                connection.onclose(event);
+                break;
+            case 'terminated':
+                connection.onterminate(connection);
+                connection = undefined;
+                break;
+            default:
+                console.log('unknown connection state: ', state);
+                break;
+        }
     }
-  }
 
   var delegate = new NavigatorPresentationDelegate();
   return delegate;
 })(NavigatorPresentationJavascriptInterface));
+
+// interface PresentationConnectionCloseEvent ////////////////////////////
+
+function PresentationConnectionCloseEvent(type, eventInitDict) {
+  this.type = type;
+  var message = eventInitDict.message;
+  var reason = eventInitDict.reason;
+
+  Object.defineProperty(this, 'message', {
+    get: function() {
+      return message;
+    }
+  });
+
+  Object.defineProperty(this, 'reason', {
+    get: function() {
+      return reason;
+    }
+  });
+}
+
+PresentationConnectionCloseEvent.prototype = Event.prototype;

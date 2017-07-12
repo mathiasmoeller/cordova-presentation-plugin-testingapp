@@ -154,3 +154,9 @@ button {
 .presentation-header {
     margin-top: calc(50vh - 29px);
 }
+
+span {
+    margin: auto;
+    display: block;
+    text-align: center;
+}

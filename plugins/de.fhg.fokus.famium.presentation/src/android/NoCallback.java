@@ -1,6 +1,7 @@
 package de.fhg.fokus.famium.presentation;
-import org.apache.cordova.CallbackContext;
 //import mock.*;
+
+import org.apache.cordova.CallbackContext;
 
 /**
  * Created by Lo on 19.06.2017.

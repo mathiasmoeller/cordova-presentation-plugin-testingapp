@@ -105,13 +105,14 @@ function PresentationConnection(url) {
   var sendMessage = function(connection) {
     return function(message) {
       var encodedMessage = encodeURIComponent(JSON.stringify(message));
+      console.log(encodedMessage);
       exec(/*successCallback*/Function, /*errorCallback*/Function, 'Presentation', 'presentationSessionPostMessage', [connection.id, encodedMessage]);
     };
   };
 
-  var closeConnection = function(connection, message) {
-    return function() {
-      console.log('closing', connection);
+  var closeConnection = function(connection) {
+    return function(message) {
+      console.log('closing', connection, message);
       exec(/*successCallback*/Function, /*errorCallback*/Function, 'Presentation', 'presentationSessionClose', [connection.id, CLOSED, message]);
     };
   };
@@ -148,9 +149,17 @@ PresentationConnectionAvailableEvent.prototype = Event.prototype;
 function PresentationConnectionCloseEvent(type, eventInitDict) {
   this.type = type;
   var message = eventInitDict.message;
+  var reason = eventInitDict.reason;
+
   Object.defineProperty(this, 'message', {
     get: function() {
       return message;
+    }
+  });
+
+  Object.defineProperty(this, 'reason', {
+    get: function() {
+      return reason;
     }
   });
 }

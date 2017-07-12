@@ -30,4 +30,5 @@ public class Presentation {
     public Activity getContext() {
 
     }
+    public void dismiss(){};
 }
