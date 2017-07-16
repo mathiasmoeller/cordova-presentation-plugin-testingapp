@@ -6,7 +6,7 @@ It implements the examples from the [W3C Presentation API](http://w3c.github.io/
 ### Setup
 ```
 $ npm install
-$ cordova platform add andoid
+$ cordova platform add android
 $ cordova run android
 ```
 ### Usage
