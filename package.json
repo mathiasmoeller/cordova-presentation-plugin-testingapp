@@ -13,7 +13,7 @@
     "dependencies": {
         "cordova-android": "^6.2.3",
         "cordova-plugin-whitelist": "^1.3.2",
-        "de.fhg.fokus.famium.presentation": "file:presentation-API-plugin"
+        "de.fhg.fokus.famium.presentation": "git+https://github.com/mathiasmoeller/cordova-presentation-plugin-1UA.git"
     },
     "cordova": {
         "plugins": {
