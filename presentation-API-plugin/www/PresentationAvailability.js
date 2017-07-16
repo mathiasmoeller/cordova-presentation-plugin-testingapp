@@ -2,10 +2,9 @@ function PresentationAvailability(connection) {
   var onAvailableChange = null;
   var availabilityValue;
 
-  // get availability
+  // initial get of availability
   var callback = function(result) {
     availabilityValue = result.available;
-    console.log('initial get of availabliity:', result, availabilityValue);
   };
   exec(callback, function() {
   }, 'Presentation', 'getAvailability', []);
@@ -21,7 +20,6 @@ function PresentationAvailability(connection) {
         onAvailableChange = eventCallback;
         if (onAvailableChange) {
           var callback = function(result) {
-            console.log('availablityChange:', result);
             availabilityValue = result.available;
             result.connection = connection;
             if (typeof onAvailableChange === 'function') {

@@ -14,13 +14,5 @@
         },
         "is_top_level": false,
         "variables": {}
-    },
-    "de.fhg.fokus.famium.presentation": {
-        "source": {
-            "type": "local",
-            "path": "presentation-API-plugin"
-        },
-        "is_top_level": true,
-        "variables": {}
     }
 }

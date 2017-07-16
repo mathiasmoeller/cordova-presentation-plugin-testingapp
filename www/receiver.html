@@ -19,12 +19,12 @@
 
   function initialize() {
 
-    let addConnection = function(connection) {
+    var addConnection = function(connection) {
       connection.onmessage = function(message) {
         if (message.data == "Say hello") {
           connection.send({data: "hello"});
         } else {
-          let spanElt = document.createElement("SPAN");
+          var spanElt = document.createElement("SPAN");
           spanElt.lang = message.data.lang;
           spanElt.textContent = message.data.string;
           document.body.appendChild(spanElt);
@@ -34,9 +34,11 @@
 
     navigator.presentation.receiver.connectionList.then(function(list) {
       list.connections.map(function(connection) {
+        console.log(connection);
         addConnection(connection);
       });
       list.onconnectionavailable = function(evt) {
+        console.log(evt);
         addConnection(evt.connection);
       };
     });

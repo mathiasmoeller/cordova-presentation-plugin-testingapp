@@ -22,15 +22,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
+
 import org.json.JSONArray;
 import org.json.JSONException;
-//import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -43,12 +46,15 @@ import android.view.Display;
  */
 public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManager.DisplayListener {
     private static final String LOG_TAG = "CDVPresentationPlugin";
+
     private CallbackContext availableChangeCallbackContext = new NoCallback();
     private Map<String, PresentationSession> sessions;
     private Map<Integer, SecondScreenPresentation> presentations;
     private DisplayManager displayManager;
     private Activity activity;
     private String defaultDisplay;
+    private final Lock mutex = new ReentrantLock(true);
+
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -151,8 +157,12 @@ public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManag
      * @throws JSONException
      */
     private boolean addWatchAvailableChange(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        mutex.lock();
+
         availableChangeCallbackContext = callbackContext;
         SenderProxy.sendAvailableChangeResult(callbackContext, getPresentations().size() > 0);
+
+        mutex.unlock();
         return true;
     }
 
@@ -165,8 +175,12 @@ public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManag
      * @throws JSONException
      */
     private boolean clearWatchAvailableChange(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        mutex.lock();
+
         availableChangeCallbackContext = new NoCallback();
         callbackContext.success();
+
+        mutex.unlock();
         return true;
     }
 
@@ -210,7 +224,11 @@ public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManag
 
     private boolean getAvailability(JSONArray args, CallbackContext callbackContext) throws JSONException {
         LOG.d(LOG_TAG, "getAvailability(): " + getPresentations().size());
+
+        mutex.lock();
         SenderProxy.sendAvailableChangeResult(callbackContext, getPresentations().size() > 0);
+        mutex.unlock();
+
         return true;
     }
 
@@ -255,21 +273,24 @@ public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManag
         return true;
     }
 
-    private boolean presentationSessionTerminate(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        String id = args.get(0).toString();
-        PresentationSession session = getSessions().remove(id);
+    private boolean presentationSessionTerminate(JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        final String id = args.get(0).toString();
+        final PresentationSession session = getSessions().remove(id);
         if (session == null) {
             callbackContext.error("session not found");
             return false;
         }
-        LOG.d(LOG_TAG, "presentationSessionTerminate(id: " + id + ")");
-        recreatePresentationObject(session);
-        session.terminate();
-        getSessions().remove(id);
-        callbackContext.success();
-
-        LOG.d(LOG_TAG, "Presentations: " + presentations.toString());
-        LOG.d(LOG_TAG, "Sessions: " + sessions.toString());
+        getActivity().runOnUiThread(new Runnable()
+        {
+            public void run()
+            {
+                LOG.d(LOG_TAG, "presentationSessionTerminate(id: " + id + ")");
+                recreatePresentationObjectSync(session);
+                session.terminate();
+                getSessions().remove(id);
+                callbackContext.success();
+            }
+        });
 
         return true;
     }

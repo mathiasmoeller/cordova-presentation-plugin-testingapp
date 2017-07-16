@@ -9,9 +9,6 @@
     "installed_plugins": {
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "io.cordova.hellocordova"
-        },
-        "de.fhg.fokus.famium.presentation": {
-            "PACKAGE_NAME": "io.cordova.hellocordova"
         }
     },
     "dependent_plugins": {}

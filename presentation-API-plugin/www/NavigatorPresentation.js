@@ -1,6 +1,7 @@
 var execRaw = require('cordova/exec'),
   cordova = require('cordova');
 
+// create and absolute url out of an relative one
 var makeAbs = function(url) {
   var absUrl = null;
   try {
@@ -19,6 +20,7 @@ var makeAbs = function(url) {
   return absUrl;
 };
 
+// wrapper function to make calls to the java context
 var exec = function() {
   var args = arguments;
   setTimeout(function() {
@@ -26,6 +28,7 @@ var exec = function() {
   }, 0);
 };
 
+// the presentation interface available in the controlling context
 function NavigatorPresentation() {
   var defaultRequest;
   var defaultDisplay = makeAbs('presentation/display.html');

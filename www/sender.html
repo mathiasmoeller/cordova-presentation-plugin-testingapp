@@ -23,15 +23,15 @@
   document.addEventListener('deviceready', initialize, false);
 
   // The Present button is visible if at least one presentation display is available
-  let presentBtn = document.getElementById("presentBtn");
+  var presentBtn = document.getElementById("presentBtn");
   // It is also possible to use relative presentation URL e.g. "presentation.html"
-  let presUrls = ["receiver.html"];
+  var presUrls = ["receiver.html"];
   // show or hide present button depending on display availability
-  let handleAvailabilityChange = function(available) {
+  var handleAvailabilityChange = function(available) {
     presentBtn.style.display = available ? "inline" : "none";
   };
 
-  let request;
+  var request;
   function initialize() {
     // Promise is resolved as soon as the presentation display availability is
     // known.
@@ -67,9 +67,9 @@
 
   // EXAMPLE 3 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  let reconnect = function() {
+  var reconnect = function() {
     // read presId from localStorage if exists
-    let presId = localStorage["presId"];
+    var presId = localStorage["presId"];
     // presId is mandatory when reconnecting to a presentation.
     if (!!presId && !!request) {
       request.reconnect(presId)
@@ -99,18 +99,18 @@
 
   // EXAMPLE 5 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  let connection;
+  var connection;
 
   // The Disconnect and Stop buttons are visible if there is a connected presentation
   const stopBtn = document.querySelector("#stopBtn");
   const disconnectBtn = document.querySelector("#disconnectBtn");
   const sendBtn = document.querySelector("#sendBtn");
 
-  stopBtn.onclick = _ => {
+  stopBtn.onclick = function() {
     connection && connection.terminate();
   };
 
-  disconnectBtn.onclick = _ => {
+  disconnectBtn.onclick = function() {
     connection && connection.close();
   };
 
@@ -141,28 +141,30 @@
     }
 
     // Monitor the connection state
-    connection.onconnect = () => {
+    connection.onconnect = function(newConnection) {
+      connection = newConnection;
       showConnectedUI();
 
       // Register message handler
-      connection.onmessage = message => {
-        console.log(`Received message: ${message.data}`);
+      connection.onmessage = function(message) {
+        console.log('Received message:', message.data);
       };
 
       // Send initial message to presentation page
       connection.send({data: "Say hello"});
     };
 
-    connection.onclose = () => {
+    connection.onclose = function() {
       connection = null;
       showDisconnectedUI();
     };
 
-    connection.onterminate = () => {
+    connection.onterminate = function() {
       // Remove presId from localStorage if exists
       delete localStorage["presId"];
       connection = null;
       showDisconnectedUI();
+      initialize();
     };
   }
 

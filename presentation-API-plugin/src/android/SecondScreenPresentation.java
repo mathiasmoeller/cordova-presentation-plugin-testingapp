@@ -55,8 +55,8 @@ public class SecondScreenPresentation extends Presentation {
      */
     protected void onStop() {
         LOG.d(LOG_TAG, "onStop()");
-        destroyWebView();
         super.onStop();
+        destroyWebView();
     }
 
     /**
@@ -94,8 +94,10 @@ public class SecondScreenPresentation extends Presentation {
             @Override
             public void onPageFinished(WebView view, String url) {
                 LOG.d(LOG_TAG, "Webview::onPageFinished()");
+
                 view.loadUrl(NavigatorPresentationJS.RECEIVER);
                 view.loadUrl("javascript:document.dispatchEvent(new Event('deviceready'));");
+
                 super.onPageFinished(view, url);
             }
         });
@@ -157,6 +159,7 @@ public class SecondScreenPresentation extends Presentation {
     public void cancel() {
         LOG.d(LOG_TAG, "cancel()");
         super.cancel();
+        //destroyWebView();
     }
 
     /**
@@ -172,23 +175,25 @@ public class SecondScreenPresentation extends Presentation {
         show();
     }
 
-    /*public void close() {
+    public void close() {
         LOG.d(LOG_TAG,"close()");
         loadUrl(getDisplayUrl());
-    }*/
+    }
 
     public void terminate() {
         LOG.d(LOG_TAG, "terminate()");
         setSession(null);
-        destroyWebView();
-        cancel();
+        dismiss();
     }
 
     private void destroyWebView() {
         outerContext.runOnUiThread(new Runnable() {
             public void run() {
-                getWebView().destroy();
-                SecondScreenPresentation.this.webView = null;
+                if(SecondScreenPresentation.this.webView != null)
+                {
+                    getWebView().destroy();
+                    SecondScreenPresentation.this.webView = null;
+                }
             }
         });
     }

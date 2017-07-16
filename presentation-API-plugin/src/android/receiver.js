@@ -1,7 +1,7 @@
 (function(delegate) {
 
+  // the presentation interface available in the receiving context
   var NavigatorPresentation = function() {
-    console.log('receiver: NavigatorPresentation receiverside', delegate);
     var presentationReceiver = new PresentationReceiver();
 
     Object.defineProperty(this, 'receiver', {
@@ -11,7 +11,7 @@
     });
   };
 
-  // make presentation available on navigator ////////////////////////////
+  // make presentation available on navigator
   var presentation = new NavigatorPresentation();
   Object.defineProperty(window.navigator, 'presentation', {
     get: function() {
@@ -24,7 +24,6 @@
   var connectionListPromise = new Promise(function(resolve) {
     delegate.onpresent = function(connection) {
       var presentationConnection = new PresentationConnection(connection);
-      console.log('receiver: new connection', presentationConnection);
       connections.push(presentationConnection);
       resolve(presentationConnectionList);
       if (presentationConnectionList.onconnectionavailable) {
@@ -33,10 +32,7 @@
     };
   });
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-
+  // add connectionList as property to the receiver
   function PresentationReceiver() {
     Object.defineProperty(this, 'connectionList', {
       get: function() {
@@ -67,6 +63,7 @@
     });
   }
 
+  // receiver interface of the PresentationConnection
   function PresentationConnection(receivedConnection) {
     Object.defineProperty(this, 'state', {
       get: function() {
@@ -132,8 +129,8 @@
     });
     Object.defineProperty(this, 'close', {
       get: function() {
-        return function() {
-          return receivedConnection.close();
+        return function(reason, message) {
+          return receivedConnection.close(reason, message);
         };
       }
     });
@@ -151,9 +148,9 @@
 
 ((function(jsInterface) {
   var connections = {};
-  /*
-   * This function acts as delegate of all Presentation API calls to Android using the NavigatorPresentationJavascriptInterface Object
-   */
+
+  // This function acts as delegate of all Presentation API calls to Android using the NavigatorPresentationJavascriptInterface Object.
+  // It acts as an agent between the receiving context and the Java implementation
   var NavigatorPresentationDelegate = function() {
     var onpresent = null;
     Object.defineProperty(this, 'onpresent', {
@@ -172,7 +169,6 @@
   };
 
   jsInterface.onsession = function(connection) {
-    console.log('receiver: onsession', connection);
     connections[connection.id] = connections[connection.id] || connection;
     var onmessage = function() {
     };
@@ -232,10 +228,8 @@
     });
     Object.defineProperty(connection, 'close', {
       get: function() {
-        return function(message) {
-          // TODO replace when implemented
-          // return jsInterface.close(connection.id, message);
-          return jsInterface.close(connection.id);
+        return function(reason, message) {
+          return jsInterface.close(connection.id, reason, message);
         };
       }
     });
@@ -250,7 +244,6 @@
   };
 
   jsInterface.onmessage = function(sessId, msg) {
-    console.log('receiver: onmessage ' + msg);
     var connection = connections[sessId];
     var data = decodeURIComponent(msg);
     var message;
@@ -264,15 +257,14 @@
       connection.onmessage.call(null, message);
     }
   };
-  jsInterface.onstatechange = function(sessId, newState) {
-    console.log('receiver: onstatechange ' + newState);
+  jsInterface.onstatechange = function(sessId, newState, reason, message) {
     var connection = connections[sessId];
     if (connection) {
-      handleStateChangeEvent(connection, newState);
+      handleStateChangeEvent(connection, newState, reason, message);
     }
   };
 
-    function handleStateChangeEvent(connection, state) {
+    function handleStateChangeEvent(connection, state, reason, message) {
         connection.state = state;
         switch (state) {
             case 'connected':
@@ -282,7 +274,7 @@
                 jsInterface.setOnPresent();
                 break;
           case 'closed':
-                var event = new PresentationConnectionCloseEvent('close', {message: state}); // TODO: message
+                var event = new PresentationConnectionCloseEvent('close', {message: message, reason: reason}); // TODO: message
                 connection.onclose(event);
                 break;
             case 'terminated':
@@ -290,7 +282,7 @@
                 connection = undefined;
                 break;
             default:
-                console.log('unknown connection state: ', state);
+                console.error('Unknown connection state: ', state);
                 break;
         }
     }

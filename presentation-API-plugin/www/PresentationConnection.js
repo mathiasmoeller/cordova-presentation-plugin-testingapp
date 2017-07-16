@@ -105,14 +105,12 @@ function PresentationConnection(url) {
   var sendMessage = function(connection) {
     return function(message) {
       var encodedMessage = encodeURIComponent(JSON.stringify(message));
-      console.log(encodedMessage);
       exec(/*successCallback*/Function, /*errorCallback*/Function, 'Presentation', 'presentationSessionPostMessage', [connection.id, encodedMessage]);
     };
   };
 
   var closeConnection = function(connection) {
     return function(message) {
-      console.log('closing', connection, message);
       exec(/*successCallback*/Function, /*errorCallback*/Function, 'Presentation', 'presentationSessionClose', [connection.id, CLOSED, message]);
     };
   };

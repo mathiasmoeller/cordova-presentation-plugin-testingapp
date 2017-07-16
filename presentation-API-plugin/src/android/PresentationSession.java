@@ -120,6 +120,10 @@ public class PresentationSession{
         {
             this.presentation.setSession(this);
         }
+        else
+        {
+            senderProxy.terminate();
+        }
     }
 
     public void postMessageToPresentation(final String msg)
@@ -174,6 +178,7 @@ public class PresentationSession{
 
         receiverProxy.close(reason, message);
         senderProxy.close(reason, message);
+        //presentation.close();
     }
 
     public void terminate() {
@@ -186,6 +191,6 @@ public class PresentationSession{
         if (getPresentation() != null) {
             getPresentation().terminate();
         }
-        assignPresentation(null);
+        presentation = null;
     }
 }

@@ -1,6 +1,7 @@
 var execRaw = require('cordova/exec'),
   cordova = require('cordova');
 
+// create and absolute url out of an relative one
 var makeAbs = function(url) {
   var absUrl = null;
   try {
@@ -19,6 +20,7 @@ var makeAbs = function(url) {
   return absUrl;
 };
 
+// wrapper function to make calls to the java context
 var exec = function() {
   var args = arguments;
   setTimeout(function() {
@@ -66,7 +68,7 @@ function PresentationRequest(url) {
         setupConnection(result);
         resolve(connection);
       }, function(error) {
-        console.log(error);
+        console.error(error);
         reject(error);
       }, 'Presentation', 'startSession', [connection.id]);
     });
@@ -79,14 +81,13 @@ function PresentationRequest(url) {
         setupConnection(result);
         resolve(connection);
       }, function(error) {
-        console.log(error);
+        console.error(error);
         reject(error);
       }, 'Presentation', 'reconnectSession', [connectionId]);
     });
   }
 
   function setupConnection(result) {
-    console.log('sender: setting up connection', result);
     connection.id = result.id;
     switch (result.eventType) {
       case 'onstatechange':
@@ -111,7 +112,6 @@ function PresentationRequest(url) {
 
   function handleStateChangeEvent(connection, result) {
     connection.state = result.value;
-    console.log('onstatechange', result);
     switch (result.value) {
       case 'connected':
         connection.onconnect(connection);
@@ -127,7 +127,7 @@ function PresentationRequest(url) {
         connection = undefined;
         break;
       default:
-        console.log('unknown connection state: ', result.value);
+        console.error('Unknown connection state: ', result.value);
         break;
     }
   }

@@ -48,3 +48,4 @@ fabric.properties
 hooks/before_prepare/*.*
 platforms/
 node_modules/
+plugins/*/
