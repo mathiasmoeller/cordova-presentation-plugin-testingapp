@@ -18,7 +18,7 @@
     "de.fhg.fokus.famium.presentation": {
         "source": {
             "type": "registry",
-            "id": "https://github.com/mathiasmoeller/cordova-presentation-plugin-1UA.git"
+            "id": "de.fhg.fokus.famium.presentation@git+https://github.com/mathiasmoeller/cordova-presentation-plugin-1UA.git"
         },
         "is_top_level": true,
         "variables": {}

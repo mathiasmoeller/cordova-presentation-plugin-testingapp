@@ -7,10 +7,10 @@
         "files": {}
     },
     "installed_plugins": {
-        "de.fhg.fokus.famium.presentation": {
+        "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "io.cordova.hellocordova"
         },
-        "cordova-plugin-whitelist": {
+        "de.fhg.fokus.famium.presentation": {
             "PACKAGE_NAME": "io.cordova.hellocordova"
         }
     },
